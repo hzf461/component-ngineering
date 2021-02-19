@@ -1,23 +1,34 @@
-import logo from './logo.svg';
-import './App.css';
+import IwRangPickerPro from './components/iwRangPickerPro'
+import moment from 'moment'
 
 function App() {
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <IwRangPickerPro
+        showTime={false}
+        // timeType="sec"
+        // label={true}
+        optionalDays={7}
+        // value={[moment('2021-01-01'), moment('2021-01-31'), { isDynamic: false }]}
+        format="YYYY/MM/DD HH:mm:ss"
+        onChange={(a, b, c, d) => {
+          console.log(a[0].format('YYYY-MM-DD HH:mm:ss'));
+          console.log(a[1].format('YYYY-MM-DD HH:mm:ss'));
+          console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>', a);
+          console.log(b);
+          console.log(c);
+          console.log(d);
+        }}
+        onOk={(a, b, c, d) => {
+          console.log(a[0].format('YYYY-MM-DD HH:mm:ss'));
+          console.log(a[1].format('YYYY-MM-DD HH:mm:ss'));
+          console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>', a);
+          console.log(b);
+          console.log(c);
+          console.log(d);
+        }}
+      />
+      <div style={{ height: 5000, background: 'pink' }}></div>
     </div>
   );
 }
