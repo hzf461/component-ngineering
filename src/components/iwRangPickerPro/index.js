@@ -193,6 +193,7 @@ export default class iwRangPickerPro extends PureComponent {
     timeType: this.props.format ? getTimeType(this.props.format) : "min",//hour 精确到时；min精确到分；sec精确到秒
     selectNum: this.props.timeType ? (snMap[this.props.timeType + ""] || "min") : 2,
     value: this.props.value || [],
+    selectDate: null,
     dynamic: (this.props.value && this.props.value[2] ? this.props.value[2].isDynamic : false),//是否为动态时间
     dynamicObj: (this.props.value && this.props.value[2] ? this.props.value[2] : {
       time: [],
@@ -203,7 +204,7 @@ export default class iwRangPickerPro extends PureComponent {
     timeContentShow: false,//是否显示时间选择弹窗
     presetStr: this.props.value && this.props.value[2] && this.props.value[2].rangeName ? this.props.value[2].rangeName : "",//匹配快速选择时显示对应时间段名称
     noDynamic: this.props.noDynamic || false,//是否显示动态时间按钮
-    showTime: this.props.showTime ,//是否显示时分秒选择
+    showTime: this.props.showTime,//是否显示时分秒选择
     extCustomVal: this.props.extCustomVal || "",//当前选中的自定义值
     extCustomValName: this.props.extCustomValName || "",//当前选中自定值的显示名
     isCustom: this.props.isCustom,//当前是否使用自定义值
@@ -679,6 +680,23 @@ export default class iwRangPickerPro extends PureComponent {
 
   }
 
+  disabledTaskDate = (current) => {
+    const { selectDate } = this.state
+    if (!current || !selectDate) return false;
+    const offsetV = 7 * 24 * 60 * 60 * 1000;                 //30天转换成ms
+    const selectV = selectDate.valueOf();
+    const currenV = current.valueOf();
+
+    console.log('currenVcurrenV', currenV);
+    function calcMinus(a, b) {
+      return a - b
+    }
+    function calcAdd(a, b) {
+      return a + b
+    }
+    return (calcMinus(currenV, offsetV) > selectV || calcAdd(currenV, offsetV) < selectV) ? true : false;
+  }
+
   //动态静态时间触发onOk
   onOk = () => {
 
@@ -982,7 +1000,7 @@ export default class iwRangPickerPro extends PureComponent {
 
   render() {
 
-    let { rootId, selectNum, open, timearr, timeContentShow, presetStr, dynamic, extCustomVal, isCustom, showTime, noDynamic, extCustomValName, contrastObj } = this.state;
+    let { rootId, selectNum, open, timearr, timeContentShow, presetStr, dynamic, extCustomVal, isCustom, showTime, selectDate, noDynamic, extCustomValName, contrastObj } = this.state;
     let { value, extBtn, id, getCalendarContainer, placement, trigger, label, newHeads, ...propsTemp } = this.props;
     let ranges = rangesObj;
     if (isCustom && newHeads) {
@@ -1329,9 +1347,7 @@ export default class iwRangPickerPro extends PureComponent {
                             ?
                             newHeads.disabledDate
                             :
-                            (current) => {
-                              return current && current > moment().endOf('day');
-                            }
+                            this.disabledTaskDate
                         }
                         dropdownClassName="_dropdownClassName"
                         locale={locale}
@@ -1342,8 +1358,17 @@ export default class iwRangPickerPro extends PureComponent {
                         {...propsTemp}
                         ranges={false}
                         value={value && value.length == 2 ? value : this.state.value}
+                        onCalendarChange={dates => {
+                          if (!dates || !dates.length) return;
+                          // setSelectDate(dates[0]);
+                          console.log('<>>>>>>>>>>>>>>>>> dates=', dates);
+                          this.setState({ selectDate: dates[0] || dates[1] })
+                        }}
                         onChange={this.onChange}
-                        onOpenChange={this.onOpenChange}
+                        // onOpenChange={this.onOpenChange}
+                        onOpenChange={() => {
+                          this.setState({ selectDate: null })
+                        }}
                         getCalendarContainer={() => {
                           let rootdom = this.getRootDom();
                           if (rootdom.className.indexOf('outbox') == -1) {
