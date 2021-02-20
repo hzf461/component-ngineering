@@ -193,6 +193,7 @@ export default class iwRangPickerPro extends PureComponent {
     timeType: this.props.format ? getTimeType(this.props.format) : "min",//hour 精确到时；min精确到分；sec精确到秒
     selectNum: this.props.timeType ? (snMap[this.props.timeType + ""] || "min") : 2,
     value: this.props.value || [],
+    selectDate: null,
     dynamic: (this.props.value && this.props.value[2] ? this.props.value[2].isDynamic : false),//是否为动态时间
     dynamicObj: (this.props.value && this.props.value[2] ? this.props.value[2] : {
       time: [],
@@ -203,7 +204,7 @@ export default class iwRangPickerPro extends PureComponent {
     timeContentShow: false,//是否显示时间选择弹窗
     presetStr: this.props.value && this.props.value[2] && this.props.value[2].rangeName ? this.props.value[2].rangeName : "",//匹配快速选择时显示对应时间段名称
     noDynamic: this.props.noDynamic || false,//是否显示动态时间按钮
-    showTime: this.props.showTime ,//是否显示时分秒选择
+    showTime: this.props.showTime,//是否显示时分秒选择
     extCustomVal: this.props.extCustomVal || "",//当前选中的自定义值
     extCustomValName: this.props.extCustomValName || "",//当前选中自定值的显示名
     isCustom: this.props.isCustom,//当前是否使用自定义值
@@ -629,6 +630,7 @@ export default class iwRangPickerPro extends PureComponent {
       this.setState({
         timearr: sarr,
         value: marr,
+        selectDate: null,
         dynamicObj: cloneDeep(dynamicObj),
         extCustomVal: extCustomVal,
         extCustomValName: extCustomValName,
@@ -677,6 +679,24 @@ export default class iwRangPickerPro extends PureComponent {
       this.props.onChange(marr, sarr, marr[2], customTime)
     };
 
+  }
+
+  disabledDateFun = current => {
+    const { selectDate } = this.state
+    const { optionalDays } = this.props
+    if (!current || !selectDate) return false;
+    const offsetV = optionalDays * 24 * 60 * 60 * 1000;                 // 天转换成ms
+    const selectV = selectDate.valueOf();
+    const currenV = current.valueOf();
+
+    // console.log('currenVcurrenV', currenV);
+    function calcMinus(a, b) {
+      return a - b
+    }
+    function calcAdd(a, b) {
+      return a + b
+    }
+    return (calcMinus(currenV, offsetV) > selectV || calcAdd(currenV, offsetV) < selectV) ? true : false;
   }
 
   //动态静态时间触发onOk
@@ -768,7 +788,8 @@ export default class iwRangPickerPro extends PureComponent {
       this.props.onOpenChange(shstate);
     }
     this.setState({
-      open: shstate
+      open: shstate,
+      selectDate: null
     })
     if (shstate) {
       let timerArr = this.props.value || this.state.value;
@@ -983,7 +1004,7 @@ export default class iwRangPickerPro extends PureComponent {
   render() {
 
     let { rootId, selectNum, open, timearr, timeContentShow, presetStr, dynamic, extCustomVal, isCustom, showTime, noDynamic, extCustomValName, contrastObj } = this.state;
-    let { value, extBtn, id, getCalendarContainer, placement, trigger, label, newHeads, ...propsTemp } = this.props;
+    let { value, extBtn, id, getCalendarContainer, placement, trigger, optionalDays, label, newHeads, ...propsTemp } = this.props;
     let ranges = rangesObj;
     if (isCustom && newHeads) {
       ranges = newHeads.rangesObj
@@ -1326,10 +1347,8 @@ export default class iwRangPickerPro extends PureComponent {
                       <RangePicker /** 动静态时间rangepicker*/
                         disabledDate={
                           isCustom && newHeads && newHeads.disabledDate
-                            ?
-                            newHeads.disabledDate
-                            :
-                            (current) => {
+                            ? newHeads.disabledDate
+                            : (optionalDays || optionalDays === 0) ? this.disabledDateFun : (current) => {
                               return current && current > moment().endOf('day');
                             }
                         }
@@ -1342,6 +1361,10 @@ export default class iwRangPickerPro extends PureComponent {
                         {...propsTemp}
                         ranges={false}
                         value={value && value.length == 2 ? value : this.state.value}
+                        onCalendarChange={dates => {
+                          if (!dates || !dates.length) return;
+                          this.setState({ selectDate: dates[0] || dates[1] })
+                        }}
                         onChange={this.onChange}
                         onOpenChange={this.onOpenChange}
                         getCalendarContainer={() => {

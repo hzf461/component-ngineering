@@ -5,10 +5,10 @@ function App() {
   return (
     <div className="App">
       <IwRangPickerPro
-        showTime={false}
+        // showTime={false}
         // timeType="sec"
         // label={true}
-        optionalDays={7}
+        optionalDays={3}
         // value={[moment('2021-01-01'), moment('2021-01-31'), { isDynamic: false }]}
         format="YYYY/MM/DD HH:mm:ss"
         onChange={(a, b, c, d) => {
