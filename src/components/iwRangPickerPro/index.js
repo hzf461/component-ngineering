@@ -139,8 +139,8 @@ let rangesObj = {//快速选择时间范围对象
   '本月': [moment().startOf('month'), moment().endOf('day'), "s"],
   '上年': [moment().subtract(1, 'year').startOf('year'), moment().subtract(1, 'year').endOf('year'), "s"],
   '本年': [moment().startOf('year'), moment().endOf('day'), "s"],
-  '过去7天': [moment().subtract(7, 'days').startOf('days'), moment().endOf('days'), "m"],
-  '过去30天': [moment().subtract(30, 'days').startOf('days'), moment().endOf('days'), "m"],
+  '过去7天': [moment().subtract(7, 'days').startOf('days'), moment().subtract(1, 'days').endOf('days'), "m"],
+  '过去30天': [moment().subtract(30, 'days').startOf('days'), moment().subtract(1, 'days').endOf('days'), "m"],
   // '上线至今': [moment(getStartServerTime()[pid] || '1970/01/01 00:00:00'), moment().endOf('day'), "m"]
 };
 
@@ -537,7 +537,7 @@ export default class iwRangPickerPro extends PureComponent {
       };
       return false;
     }
-    if ((this.state.value[0] && this.state.value[1]) && marr[0].isSame(this.state.value[0]) && marr[1].isSame(this.state.value[1]) && timestr == (this.state.value[2] && this.state.value[2].rangeName ? this.state.value[2].rangeName : "")) {
+    if ((this.state.value[0] && this.state.value[1]) && !marr[0].isSame(this.state.value[0]) && !marr[1].isSame(this.state.value[1]) && timestr == (this.state.value[2] && this.state.value[2].rangeName ? this.state.value[2].rangeName : "")) {
       return false;
     }
 
