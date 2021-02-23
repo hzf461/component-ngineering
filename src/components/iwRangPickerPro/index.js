@@ -513,7 +513,7 @@ export default class iwRangPickerPro extends PureComponent {
     }
   }
   //动态静态时间触发onChange
-  onChange = (marr, sarr, timestr, send) => {
+  onChange = (marr, sarr, timestr, send, isChoice) => {
     // console.log(marr[0].format('YYYY-MM-DD HH:mm:ss'));
     // console.log(marr[1].format('YYYY-MM-DD HH:mm:ss'));
     // console.log('==============>',marr);
@@ -539,6 +539,10 @@ export default class iwRangPickerPro extends PureComponent {
     }
     if ((this.state.value[0] && this.state.value[1]) && !marr[0].isSame(this.state.value[0]) && !marr[1].isSame(this.state.value[1]) && timestr == (this.state.value[2] && this.state.value[2].rangeName ? this.state.value[2].rangeName : "")) {
       return false;
+    }
+    // 快速选择点击的是同一个
+    if (isChoice === true && timestr == (this.state.value[2] && this.state.value[2].rangeName ? this.state.value[2].rangeName : "")){
+      return false
     }
 
     let _this = this;
@@ -1033,17 +1037,18 @@ export default class iwRangPickerPro extends PureComponent {
     //快捷时间选择按钮
     let footerTimeChoiceBtn = () => {
       let buttonArr = [];
-      for (let key in ranges) {
-        buttonArr[buttonArr.length] = <Button
-          key={key}
-          onMouseEnter={footerTimeEnter.bind(this, ranges[key])}
-          onMouseLeave={footerTimeLeave.bind(this, ranges[key])}
-          className={classNames("footerBtn", "ant-tag-blue", "rangesBtnType", { rangesBtnTypem: key == '过去7天' || key == '过去30天' })}
-          size={size}
-          onClick={footerTimeChoice.bind(this, ranges[key], key)}>{key}</Button>
-      }
       if (extBtn && extBtn.length != 0) {
         buttonArr = extBtn;
+      } else {
+        for (let key in ranges) {
+          buttonArr[buttonArr.length] = <Button
+            key={key}
+            onMouseEnter={footerTimeEnter.bind(this, ranges[key])}
+            onMouseLeave={footerTimeLeave.bind(this, ranges[key])}
+            className={classNames("footerBtn", "ant-tag-blue", "rangesBtnType", { rangesBtnTypem: key == '过去7天' || key == '过去30天' })}
+            size={size}
+            onClick={footerTimeChoice.bind(this, ranges[key], key)}>{key}</Button>
+        }
       }
 
       return buttonArr;
@@ -1052,9 +1057,9 @@ export default class iwRangPickerPro extends PureComponent {
     //快捷时间选择点击
     let footerTimeChoice = (momentArr, timestr) => {
       if (this.props.onOk) {
-        this.onChange([moment(momentArr[0].format(format)), moment(momentArr[1].format(format))], [momentArr[0].format(format), momentArr[1].format(format)], timestr, true)
+        this.onChange([moment(momentArr[0].format(format)), moment(momentArr[1].format(format))], [momentArr[0].format(format), momentArr[1].format(format)], timestr, true, true)
       } else {
-        this.onChange([moment(momentArr[0].format(format)), moment(momentArr[1].format(format))], [momentArr[0].format(format), momentArr[1].format(format)], timestr)
+        this.onChange([moment(momentArr[0].format(format)), moment(momentArr[1].format(format))], [momentArr[0].format(format), momentArr[1].format(format)], timestr, false, true)
 
       }
       footerTimeLeave();
@@ -1285,7 +1290,7 @@ export default class iwRangPickerPro extends PureComponent {
             <div className="timeContent timeContentShow" >
               <div className="timeContentHead">
                 <div className={classNames("timeContentHeadBtn", { on: !!(dynamic && (!isCustom)) })} style={noDynamic ? { display: "none" } : {}} onClick={() => { this.dynamicStateChange(true) }}>动态时间</div>
-                <div className={classNames("timeContentHeadBtn", { on: !!((!dynamic) && (!isCustom)) })} onClick={() => { this.dynamicStateChange(false) }}>静态时间</div>
+                <div className={classNames("timeContentHeadBtn", { on: !!((!dynamic) && (!isCustom)) })} style={noDynamic ? { display: "none" } : {}} onClick={() => { this.dynamicStateChange(false) }}>静态时间</div>
                 {
                   newHeads && newHeads.name
                     ?

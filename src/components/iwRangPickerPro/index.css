@@ -62,13 +62,13 @@
 .showTimePopBtn {
   width: 100%;
   overflow: hidden;
-  height: 36px;
+  height: 32px;
 }
 .timeStrLine {
-  height: 36px;
+  height: 32px;
 }
 .timeStrLine button {
-  height: 36px;
+  height: 32px;
 }
 /* 触发浮层的按钮 end */
 /* 头 start */

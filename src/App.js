@@ -17,18 +17,23 @@ function App() {
     console.log(dateString);
     console.log(dynamicObj);
     console.log(customTime);
-    // setFrom_date(date[0].format(dateFormat))
-    // setTo_date(date[1].format(dateFormat))
-    // setDynamic_time(dynamicObj.isDynamic)
-    // setDynamic_time_param({ name: dynamicObj.rangeName, time: dynamicObj.time })
+    if (!!(dynamicObj && dynamicObj.time)) {
+      setFrom_date(date[0].format(dateFormat))
+      setTo_date(date[1].format(dateFormat))
+      setDynamic_time(dynamicObj.isDynamic)
+      setDynamic_time_param({ name: dynamicObj.rangeName, time: dynamicObj.time })
+    }
+
   }
 
   return (
     <div className="App">
       <IwRangPickerPro
-        showTime={false}
+        // showTime={false}
         // timeType="sec"
         label={true}
+        noDynamic={true}
+
         // optionalDays={3}
         // value={[moment('2021-01-01'), moment('2021-01-31'), { isDynamic: false }]}
         // value={[
