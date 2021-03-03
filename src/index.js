@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 import 'antd/dist/antd.css'
+import 'rc-calendar/assets/index.css';
 // import 'antd/lib/date-picker/style/index.css'
 import App from './App';
 import reportWebVitals from './reportWebVitals';

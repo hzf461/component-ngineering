@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import IwRangPickerPro from './components/iwRangPickerPro'
 import moment from 'moment'
+import Calendar from 'rc-calendar';
 const dateFormat = 'YYYY-MM-DD HH:mm:ss';
 
 function App() {
@@ -28,6 +29,8 @@ function App() {
 
   return (
     <div className="App">
+      <Calendar />
+      <hr></hr>
       <IwRangPickerPro
         // showTime={false}
         // timeType="sec"
