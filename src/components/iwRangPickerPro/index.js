@@ -141,6 +141,7 @@ let rangesObj = {//快速选择时间范围对象
   '本年': [moment().startOf('year'), moment().endOf('day'), "s"],
   '过去7天': [moment().subtract(7, 'days').startOf('days'), moment().subtract(1, 'days').endOf('days'), "m"],
   '过去30天': [moment().subtract(30, 'days').startOf('days'), moment().subtract(1, 'days').endOf('days'), "m"],
+  '自某日至今': false
   // '上线至今': [moment(getStartServerTime()[pid] || '1970/01/01 00:00:00'), moment().endOf('day'), "m"]
 };
 
@@ -195,6 +196,8 @@ export default class iwRangPickerPro extends PureComponent {
     value: this.props.value || [],
     selectDate: null,
     dynamic: (this.props.value && this.props.value[2] ? this.props.value[2].isDynamic : false),//是否为动态时间
+    // 是否是 ‘自某日至今’
+    certainDate: (this.props.value && this.props.value[2] && this.props.value[2].certainDate === true ? true : false),
     dynamicObj: (this.props.value && this.props.value[2] ? this.props.value[2] : {
       time: [],
       rangeName: "",
@@ -313,12 +316,13 @@ export default class iwRangPickerPro extends PureComponent {
 
   componentDidMount() {
     if (this.props.value) {
+      // value 有值
       if (this.props.value[2] && (this.props.value[2].time || this.props.value[2].rangeName)) {
 
         let newPropsValueDynamicObjStr = this.props.value && this.props.value[2] ? JSON.stringify(this.props.value[2]) : "";
         if (newPropsValueDynamicObjStr) {
-          let stime = "";
-          let etime = "";
+          let stime = ""; // 开始时间（moment对象）
+          let etime = ""; // 结束时间（moment对象）
           if (this.props.value[0] && this.props.value[1] && this.props.value[2] && this.props.value[2].time) {
             if ((this.props.value[2].rangeName) && (rangesObj[this.props.value[2].rangeName])) {
               let tagRange = rangesObj[this.props.value[2].rangeName];
@@ -326,6 +330,9 @@ export default class iwRangPickerPro extends PureComponent {
               etime = tagRange[1].format(format).toString();
               stime = moment(stime.split(" ")[0] + " " + this.props.value[0].format(format).toString().split(" ")[1]);
               etime = moment(etime.split(" ")[0] + " " + this.props.value[1].format(format).toString().split(" ")[1]);
+            } else if (this.props.value[2].certainDate === true) {
+              stime = this.props.value[0].startOf('day')
+              etime = moment().endOf('day')
             } else {
               stime = moment().startOf("day").subtract(this.props.value[2].time[0], "days").format(format).toString();
               etime = moment().startOf("day").subtract(this.props.value[2].time[1], "days").format(format).toString();
@@ -335,10 +342,15 @@ export default class iwRangPickerPro extends PureComponent {
 
           }
           this.setState({
+            // 时间数组（字符串）
             timearr: [this.props.value[0].format(format), this.props.value[1].format(format)],
+            // 时间数组（moment对象）
             value: this.props.value && this.props.value[2] ? [stime, etime, this.props.value[2] || {}] : (this.props.value || []),
-            dynamic: this.props.value[2].isDynamic,//是否为动态时间
+            // 是否为动态时间
+            dynamic: this.props.value[2].isDynamic,
+            // 
             dynamicObj: this.props.value[2],
+            // rangesObj 的key
             presetStr: ((rangesObj[this.props.value[2].rangeName]) ? this.props.value[2].rangeName : (this.props.extCustomValName ? this.props.extCustomValName : "")),
 
           }, () => {
@@ -521,7 +533,7 @@ export default class iwRangPickerPro extends PureComponent {
     // console.log(timestr);
     // console.log(send);
     // marr = [marr[0], moment(marr[1].format('YYYY-MM-DD') + ' 23:59:59')]
-    let { timearr, dynamicObj, isCustom, showTime } = this.state;
+    let { timearr, dynamicObj, isCustom, showTime, choiceKey, certainDate } = this.state;
 
     if (marr.length == 0 && sarr.length == 0) {
       this.setState({
@@ -541,7 +553,7 @@ export default class iwRangPickerPro extends PureComponent {
       return false;
     }
     // 快速选择点击的是同一个
-    if (isChoice === true && timestr == (this.state.value[2] && this.state.value[2].rangeName ? this.state.value[2].rangeName : "")){
+    if (isChoice === true && timestr == (this.state.value[2] && this.state.value[2].rangeName ? this.state.value[2].rangeName : "")) {
       return false
     }
 
@@ -600,6 +612,7 @@ export default class iwRangPickerPro extends PureComponent {
       sarr = [marr[0].format(format), marr[1].format(format)]
     }
 
+    // 1、时间数组（字符串）；2、
     if ((JSON.stringify(timearr) != JSON.stringify(sarr)) || (dynamicObj.rangeName != timestr) || (timestr === false)) {
 
       let time0 = moment(sarr[0]);
@@ -613,7 +626,7 @@ export default class iwRangPickerPro extends PureComponent {
 
 
       if (marr[0].isSameOrAfter(marr[1])) {
-        message.info("开始时间与结束时间一致！")
+        message.info("时间选择有误，请重新选择！")
         // return false;
       }
       presetStr = this.handlePreset(marr, timestr);
@@ -623,12 +636,15 @@ export default class iwRangPickerPro extends PureComponent {
           this.state.dynamic ?
             "过去" + timeStrArr[0] + "天 - "
             +
-            "过去" + timeStrArr[1] + "天" :
+            (timeStrArr[1] > 0 ? "过去" + timeStrArr[1] + "天" : '今天') :
             ""
         )),
-        isDynamic: this.state.dynamic
+        isDynamic: this.state.dynamic,
+        certainDate: this.state.certainDate
       }
       marr[2] = cloneDeep(dynamicObj);
+
+      // console.log('+++++++++++++++++++++++++++++', dynamicObj);
 
       // 赋值
       this.setState({
@@ -674,15 +690,39 @@ export default class iwRangPickerPro extends PureComponent {
         _this.setState(_ud);
       });
 
+      // 发送给调用者
+      if (send && this.props.onOk) {
+        this.props.onOk(marr, timearr, marr[2], customTime)
+      } else if (this.props.onChange) {
+        this.props.onChange(marr, sarr, marr[2], customTime)
+      };
     }
 
+  }
 
-    if (send && this.props.onOk) {
-      this.props.onOk(marr, timearr, marr[2], customTime)
-    } else if (this.props.onChange) {
-      this.props.onChange(marr, sarr, marr[2], customTime)
-    };
+  // 某日至今触发
+  onDayChange = (date, dateString) => {
+    const value = [date.startOf('day'), moment().endOf('day')]
+    const timearr = [value[0].format(format), value[1].format(format)]
+    const time = Math.floor((value[1] - value[0]) / (1000 * 60 * 60 * 24))
+    const dynamicObj = {
+      isDynamic: this.state.dynamic,
+      rangeName: dateString.split(' ')[0] + ' - 今天',
+      time: [time, 0],
+      certainDate: true
+    }
 
+    this.setState({
+      // 时间数组（字符串）
+      timearr: timearr,
+      // 时间数组（moment对象）
+      value: value,
+      // 固定置位null
+      selectDate: null,
+      dynamicObj: cloneDeep(dynamicObj)
+    })
+
+    this.props.onChange(value, timearr, dynamicObj)
   }
 
   disabledDateFun = current => {
@@ -743,10 +783,9 @@ export default class iwRangPickerPro extends PureComponent {
           isDynamic: dynamicObj.isDynamic
         })
       }
-
-
       return false;
     }
+
     let marr = [moment(timearr[0]), moment(timearr[1])];
     if (this.props.onOk) {
       this.props.onOk(marr, timearr, dynamicObj)
@@ -763,6 +802,8 @@ export default class iwRangPickerPro extends PureComponent {
 
       if (timesInput[0]) {
         time0 = timesInput[0].value.split(" ")[1];
+      }
+      if (timesInput[1]) {
         time1 = timesInput[1].value.split(" ")[1];
       }
 
@@ -895,8 +936,10 @@ export default class iwRangPickerPro extends PureComponent {
     }
     this.setState({ contrastObj: contrastObj, dynamic: dynamicState, dynamicObj, isCustom: isCustom || false, extCustomVal: extCustomVal, extCustomValName: extCustomValName }, () => {
       if (this.state.value && this.state.value[0] && this.state.value[1]) {
-        // let timestr = (isCustom && extCustomValName) ? extCustomValName : this.handlePreset(this.state.value);
-        // this.onChange(this.state.value, [this.state.value[0].format(format), this.state.value[1].format(format)], timestr);
+        let timestr = (isCustom && extCustomValName) ? extCustomValName : this.handlePreset(this.state.value);
+
+        // console.log('qqqqqqqqqqqq', timestr);
+        this.onChange(this.state.value, [this.state.value[0].format(format), this.state.value[1].format(format)], timestr);
       }
 
     })
@@ -1007,7 +1050,7 @@ export default class iwRangPickerPro extends PureComponent {
 
   render() {
 
-    let { rootId, selectNum, open, timearr, timeContentShow, presetStr, dynamic, extCustomVal, isCustom, showTime, noDynamic, extCustomValName, contrastObj } = this.state;
+    let { rootId, selectNum, open, timearr, timeContentShow, presetStr, dynamic, extCustomVal, certainDate, isCustom, showTime, noDynamic, extCustomValName, contrastObj, choiceKey } = this.state;
     let { value, extBtn, id, getCalendarContainer, placement, trigger, optionalDays, label, newHeads, ...propsTemp } = this.props;
     let ranges = rangesObj;
     if (isCustom && newHeads) {
@@ -1045,7 +1088,7 @@ export default class iwRangPickerPro extends PureComponent {
             key={key}
             onMouseEnter={footerTimeEnter.bind(this, ranges[key])}
             onMouseLeave={footerTimeLeave.bind(this, ranges[key])}
-            className={classNames("footerBtn", "ant-tag-blue", "rangesBtnType", { rangesBtnTypem: key == '过去7天' || key == '过去30天' })}
+            className={classNames("footerBtn", "ant-tag-blue", "rangesBtnType", { rangesBtnTypem: key == '过去7天' || key == '过去30天' || key == '自某日至今' })}
             size={size}
             onClick={footerTimeChoice.bind(this, ranges[key], key)}>{key}</Button>
         }
@@ -1056,20 +1099,28 @@ export default class iwRangPickerPro extends PureComponent {
 
     //快捷时间选择点击
     let footerTimeChoice = (momentArr, timestr) => {
-      if (this.props.onOk) {
-        this.onChange([moment(momentArr[0].format(format)), moment(momentArr[1].format(format))], [momentArr[0].format(format), momentArr[1].format(format)], timestr, true, true)
+      // 自某日至今
+      if (momentArr === false) {
+        this.setState({ certainDate: true, presetStr: '' })
+        // [date.startOf('day'), moment().endOf('day')]
+        this.onDayChange(moment().subtract(1, 'days').startOf('day'), moment().subtract(1, 'days').startOf('day').format(format))
       } else {
-        this.onChange([moment(momentArr[0].format(format)), moment(momentArr[1].format(format))], [momentArr[0].format(format), momentArr[1].format(format)], timestr, false, true)
-
+        this.setState({
+          certainDate: false
+        }, () => {
+          if (this.props.onOk) {
+            this.onChange([moment(momentArr[0].format(format)), moment(momentArr[1].format(format))], [momentArr[0].format(format), momentArr[1].format(format)], timestr, true, true)
+          } else {
+            this.onChange([moment(momentArr[0].format(format)), moment(momentArr[1].format(format))], [momentArr[0].format(format), momentArr[1].format(format)], timestr, false, true)
+          }
+        })
       }
       footerTimeLeave();
-      this.setState({
-        timeContentShow: false
-      })
     }
 
     //快捷时间选择鼠标移入
     let footerTimeEnter = (momentArr) => {
+      if (momentArr === false) return false
       let timeStrArr = [momentArr[0].format(format).split(" ")[0], momentArr[1].format(format).split(" ")[0]];//需要标记的时间范围
       let yearArr = document.getElementsByClassName("ant-calendar-year-select");//当前时间table显示的年
       let monthArr = document.getElementsByClassName("ant-calendar-month-select");//当前时间table显示的月
@@ -1237,12 +1288,16 @@ export default class iwRangPickerPro extends PureComponent {
         if (presetStr) {
           return <span>{presetStr}</span>
         } else {
+          if (certainDate === true) {
+            // 自某日至今
+            return (time0.format('YYYY/MM/DD') + ' - ') + (((tempTime1) == 0 ? "今" : "过去" + (tempTime1)) + '天')
+          }
           return (
-            (tempTime1) == 0 ? "今" : "过去" + (tempTime1)
+            (tempTime0) == 0 ? "今" : "过去" + (tempTime0)
           ) + "天 - "
             +
             (
-              (tempTime0) == 0 ? "今" : "过去" + (tempTime0)
+              (tempTime1) == 0 ? "今" : "过去" + (tempTime1)
             ) + "天"
         }
       } else {
@@ -1325,7 +1380,7 @@ export default class iwRangPickerPro extends PureComponent {
                   }
                 </div>
                 {/* 日历面板区域 */}
-                <div className="rangePickerDiv" ref={this.pickContainer} id={rootId}>
+                <div className="rangePickerDiv" style={{ width: certainDate === true ? 285 : 552 }} ref={this.pickContainer} id={rootId}>
                   {
                     (contrastObj.isContrast && (!isCustom))
                       ?
@@ -1333,7 +1388,7 @@ export default class iwRangPickerPro extends PureComponent {
                         className="contrasRangPicker"
                         disabledDate={current => (current && current > moment().endOf('day'))}
                         locale={locale}
-                        open={true}
+                        open={timeContentShow}
                         defaultValue={this.props.defaultValue || this.props.initialValue}
                         showTime={showTime}
                         format="YYYY/MM/DD HH:mm"
@@ -1349,62 +1404,82 @@ export default class iwRangPickerPro extends PureComponent {
                         }}
                       />
                       :
-                      <RangePicker /** 动静态时间rangepicker*/
-                        disabledDate={
-                          isCustom && newHeads && newHeads.disabledDate
-                            ? newHeads.disabledDate
-                            : (optionalDays || optionalDays === 0) ? this.disabledDateFun : (current) => {
-                              return current && current > moment().endOf('day');
+                      certainDate === true
+                        ?
+                        <DatePicker
+                          locale={locale}
+                          open={timeContentShow}
+                          onChange={this.onDayChange}
+                          disabledDate={current => current && current > moment().endOf('day')}
+                          showToday={false}
+                          dropdownClassName="_dropdownDayClass"
+                          value={value && value.length == 2 ? value[0] : this.state.value[0]}
+                          format={format}
+                          getCalendarContainer={() => {
+                            let rootdom = this.getRootDom();
+                            if (rootdom.className.indexOf('outbox') == -1) {
+                              rootdom.className = rootdom.className + " outbox";
                             }
-                        }
-                        dropdownClassName="_dropdownClassName"
-                        locale={locale}
-                        open={true}
-                        defaultValue={this.props.defaultValue || this.props.initialValue}
-                        showTime={(isCustom && newHeads && (newHeads.showTime === true || newHeads.showTime === false)) ? newHeads.showTime : true}
-                        format="YYYY/MM/DD HH:mm"
-                        {...propsTemp}
-                        ranges={false}
-                        value={value && value.length == 2 ? value : this.state.value}
-                        onCalendarChange={dates => {
-                          if (!dates || !dates.length) return;
-                          this.setState({ selectDate: dates[0] || dates[1] })
-                        }}
-                        onChange={this.onChange}
-                        onOpenChange={this.onOpenChange}
-                        getCalendarContainer={() => {
-                          let rootdom = this.getRootDom();
-                          if (rootdom.className.indexOf('outbox') == -1) {
-                            rootdom.className = rootdom.className + " outbox";
+                            return rootdom
+                          }}
+                        />
+                        :
+                        <RangePicker /** 动静态时间rangepicker*/
+                          disabledDate={
+                            isCustom && newHeads && newHeads.disabledDate
+                              ? newHeads.disabledDate
+                              : (optionalDays || optionalDays === 0) ? this.disabledDateFun : (current) => {
+                                return current && current > moment().endOf('day');
+                              }
                           }
-                          return rootdom
-                        }}
-                        renderExtraFooter={
-                          () => {
-                            if (showTime === false) {
-                              return null;
+                          dropdownClassName="_dropdownClassName"
+                          locale={locale}
+                          open={timeContentShow}
+                          defaultValue={this.props.defaultValue || this.props.initialValue}
+                          showTime={(isCustom && newHeads && (newHeads.showTime === true || newHeads.showTime === false)) ? newHeads.showTime : true}
+                          format={format}
+                          {...propsTemp}
+                          ranges={false}
+                          value={value && value.length == 2 ? value : this.state.value}
+                          onCalendarChange={dates => {
+                            if (!dates || !dates.length) return;
+                            this.setState({ selectDate: dates[0] || dates[1] })
+                          }}
+                          onChange={this.onChange}
+                          onOpenChange={this.onOpenChange}
+                          getCalendarContainer={() => {
+                            let rootdom = this.getRootDom();
+                            if (rootdom.className.indexOf('outbox') == -1) {
+                              rootdom.className = rootdom.className + " outbox";
                             }
-                            return <div className="extraFooter">
-                              <div className="timedivout" >
-                                <div className="timediv0">
-                                  {createOption("hour", 0)}
-                                  {selectNum > 1 ? " : " : ""}
-                                  {selectNum > 1 ? createOption("min", 1) : ""}
-                                  {selectNum > 2 ? " : " : ""}
-                                  {selectNum > 2 ? createOption("sec", 2) : ""}
-                                </div>
-                                <div className="timediv1">
-                                  {createOption("hour", selectNum)}
-                                  {selectNum > 1 ? " : " : ""}
-                                  {selectNum > 1 ? createOption("min", selectNum + 1) : ""}
-                                  {selectNum > 2 ? " : " : ""}
-                                  {selectNum > 2 ? createOption("sec", selectNum + 2) : ""}
+                            return rootdom
+                          }}
+                          renderExtraFooter={
+                            () => {
+                              if (showTime === false) {
+                                return null;
+                              }
+                              return <div className="extraFooter">
+                                <div className="timedivout" >
+                                  <div className="timediv0">
+                                    {createOption("hour", 0)}
+                                    {selectNum > 1 ? " : " : ""}
+                                    {selectNum > 1 ? createOption("min", 1) : ""}
+                                    {selectNum > 2 ? " : " : ""}
+                                    {selectNum > 2 ? createOption("sec", 2) : ""}
+                                  </div>
+                                  <div className="timediv1">
+                                    {createOption("hour", selectNum)}
+                                    {selectNum > 1 ? " : " : ""}
+                                    {selectNum > 1 ? createOption("min", selectNum + 1) : ""}
+                                    {selectNum > 2 ? " : " : ""}
+                                    {selectNum > 2 ? createOption("sec", selectNum + 2) : ""}
+                                  </div>
                                 </div>
                               </div>
-                            </div>
+                            }
                           }
-                        }
-                      />
+                        />
 
                   }
 

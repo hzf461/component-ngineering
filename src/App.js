@@ -3,12 +3,13 @@ import IwRangPickerPro from './components/iwRangPickerPro'
 import moment from 'moment'
 import Calendar from 'rc-calendar';
 const dateFormat = 'YYYY-MM-DD HH:mm:ss';
+const localValue = localStorage.getItem('localValue') ? JSON.parse(localStorage.getItem('localValue')) : {}
 
 function App() {
-  const [from_date, setFrom_date] = useState("2021-02-12 00:00:00")
-  const [to_date, setTo_date] = useState("2021-02-18 23:59:59")
-  const [dynamic_time, setDynamic_time] = useState(true)
-  const [dynamic_time_param, setDynamic_time_param] = useState({ name: '过去7天', time: [7, 1] })
+  const [from_date, setFrom_date] = useState(localValue.from_date || "2021-02-12 00:00:00")
+  const [to_date, setTo_date] = useState(localValue.to_date || "2021-02-18 23:59:59")
+  const [dynamic_time, setDynamic_time] = useState(localValue.dynamic_time === undefined ? true : localValue.dynamic_time)
+  const [dynamic_time_param, setDynamic_time_param] = useState(localValue.dynamic_time_param || { name: '过去7天', time: [7, 1], certainDate: false })
 
   function onChangeDate(date, dateString, dynamicObj, customTime) {
     console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>');
@@ -22,20 +23,28 @@ function App() {
       setFrom_date(date[0].format(dateFormat))
       setTo_date(date[1].format(dateFormat))
       setDynamic_time(dynamicObj.isDynamic)
-      setDynamic_time_param({ name: dynamicObj.rangeName, time: dynamicObj.time })
+      setDynamic_time_param({ name: dynamicObj.rangeName, time: dynamicObj.time,  certainDate: !!dynamicObj.certainDate })
+
+      // 保存本地
+      localStorage.setItem('localValue', JSON.stringify({
+        from_date: date[0].format(dateFormat),
+        to_date: date[1].format(dateFormat),
+        dynamic_time: dynamicObj.isDynamic,
+        dynamic_time_param: { name: dynamicObj.rangeName, time: dynamicObj.time, certainDate: !!dynamicObj.certainDate }
+      }))
     }
 
   }
 
   return (
     <div className="App">
-      <Calendar />
+      {/* <Calendar /> */}
       <hr></hr>
       <IwRangPickerPro
         // showTime={false}
         // timeType="sec"
         label={true}
-        noDynamic={true}
+        // noDynamic={true}
 
         // optionalDays={3}
         // value={[moment('2021-01-01'), moment('2021-01-31'), { isDynamic: false }]}
@@ -55,6 +64,8 @@ function App() {
             isDynamic: !!dynamic_time,
             rangeName: dynamic_time_param.name,
             time: dynamic_time_param.time,
+            // 自某日至今
+            certainDate: dynamic_time_param.certainDate
           },
         ]}
         // format="YYYY/MM/DD HH:mm:ss"

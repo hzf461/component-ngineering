@@ -36,7 +36,7 @@
 .timeContent {
   position: relative;
   height: 395px;
-  width: 715px;
+  // width: 715px;
   font-size: 13px;
   padding: 12px 10px 10px;
   background: #fff;
@@ -131,7 +131,7 @@
 
 /* 中 start */
 .timeContentMid {
-  width: 693px;
+  // width: 693px;
   overflow: hidden;
 
   /* 左边的快速选择 start */
@@ -165,13 +165,13 @@
     position: relative !important;
     float: left;
     height: 280px !important;
-    width: 552px !important;
+    // width: 552px !important;
   }
 
   .outbox {
     position: relative;
     overflow: hidden;
-    width: 552px !important;
+    // width: 552px !important;
     height: 300px;
 
     .footerBtn {
@@ -181,6 +181,7 @@
 
     .ant-calendar-range {
       box-shadow: none !important;
+      overflow: visible;
     }
 
     .ant-calendar-picker-container {
@@ -200,6 +201,11 @@
     .ant-calendar-header {
       height: 35px;
       line-height: 35px;
+    }
+
+    .ant-calendar {
+      // border: 1px solid #ddd !important;
+      box-shadow: none !important;
     }
 
     .ant-calendar-range-part {
@@ -490,6 +496,7 @@
 
   .ant-calendar-range {
     box-shadow: none !important;
+    overflow: visible;
   }
 
   .ant-calendar-picker-container {
@@ -596,4 +603,10 @@
     height: 210px;
     z-index: 1;
   }
+}
+
+/* 弹出的日历面板 - 单日 */
+._dropdownDayClass {
+  border: 1px solid #ddd !important;
+  border-radius: 5px !important;
 }
