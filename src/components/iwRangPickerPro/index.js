@@ -259,6 +259,9 @@ export default class iwRangPickerPro extends PureComponent {
           etime = tagRange[1].format(format).toString();
           stime = moment(stime.split(" ")[0] + " " + this.props.value[0].format(format).toString().split(" ")[1]);
           etime = moment(etime.split(" ")[0] + " " + this.props.value[1].format(format).toString().split(" ")[1]);
+        } else if (this.props.value[2].certainDate === true) {
+          stime = this.props.value[0].startOf('day')
+          etime = moment().endOf('day')
         } else {
           stime = moment().subtract(this.props.value[2].time[0], "days").format(format).toString();
           etime = moment().subtract(this.props.value[2].time[1], "days").format(format).toString();
@@ -295,6 +298,7 @@ export default class iwRangPickerPro extends PureComponent {
       this.setState({
         timearr: [this.props.value[0].format(format), this.props.value[1].format(format)],
         value: this.props.value && this.props.value[2] ? [stime, etime, this.props.value[2] || {}] : (this.props.value || []),
+        certainDate: this.props.value[2].certainDate === true ? true : false,
         dynamic: this.props.value[2].isDynamic,//是否为动态时间
         dynamicObj: this.props.value[2],
         presetStr: ((rangesObj[this.props.value[2].rangeName]) ? this.props.value[2].rangeName : (this.props.extCustomValName ? this.props.extCustomValName : "")),
@@ -346,6 +350,8 @@ export default class iwRangPickerPro extends PureComponent {
             timearr: [this.props.value[0].format(format), this.props.value[1].format(format)],
             // 时间数组（moment对象）
             value: this.props.value && this.props.value[2] ? [stime, etime, this.props.value[2] || {}] : (this.props.value || []),
+            // 自某日至今
+            certainDate: this.props.value[2].certainDate === true ? true : false,
             // 是否为动态时间
             dynamic: this.props.value[2].isDynamic,
             // 
@@ -634,8 +640,8 @@ export default class iwRangPickerPro extends PureComponent {
         time: (presetStr == "上线至今" ? [-1, timeStrArr[1]] : timeStrArr),
         rangeName: (presetStr ? presetStr : (
           this.state.dynamic ?
-            "过去" + timeStrArr[0] + "天 - "
-            +
+            (certainDate === true ? marr[0].format('YYYY/MM/DD') : "过去" + timeStrArr[0] + "天")
+            + " - " +
             (timeStrArr[1] > 0 ? "过去" + timeStrArr[1] + "天" : '今天') :
             ""
         )),
@@ -1102,8 +1108,10 @@ export default class iwRangPickerPro extends PureComponent {
       // 自某日至今
       if (momentArr === false) {
         this.setState({ certainDate: true, presetStr: '' })
+        const { value } = this.state
         // [date.startOf('day'), moment().endOf('day')]
-        this.onDayChange(moment().subtract(1, 'days').startOf('day'), moment().subtract(1, 'days').startOf('day').format(format))
+        const stime = value && value[0] ? value[0].startOf('day') : moment().subtract(1, 'days').startOf('day');
+        this.onDayChange(stime, stime.format(format))
       } else {
         this.setState({
           certainDate: false

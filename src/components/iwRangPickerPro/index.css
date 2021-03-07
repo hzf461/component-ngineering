@@ -104,12 +104,11 @@
 /* 头 end */
 /* 中 start */
 .timeContentMid {
-  overflow: hidden;
+  display: flex;
   /* 左边的快速选择 start */
   /* 左边的快速选择 end */
 }
 .timeContentMid .fastTimeChoice {
-  float: left;
   width: 140px;
   position: relative;
 }
@@ -131,7 +130,6 @@
 }
 .timeContentMid .rangePickerDiv {
   position: relative !important;
-  float: left;
   height: 280px !important;
 }
 .timeContentMid .outbox {
