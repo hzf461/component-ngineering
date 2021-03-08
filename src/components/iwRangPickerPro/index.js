@@ -717,6 +717,7 @@ export default class iwRangPickerPro extends PureComponent {
       time: [time, 0],
       certainDate: true
     }
+    value[2] = cloneDeep(dynamicObj);
 
     this.setState({
       // 时间数组（字符串）
@@ -727,7 +728,6 @@ export default class iwRangPickerPro extends PureComponent {
       selectDate: null,
       dynamicObj: cloneDeep(dynamicObj)
     })
-
     this.props.onChange(value, timearr, dynamicObj)
   }
 
