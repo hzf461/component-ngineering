@@ -38,7 +38,7 @@ function App() {
 
   return (
     <div className="App">
-      {/* <Calendar /> */}
+      <Calendar />
       <hr></hr>
       <IwRangPickerPro
         // showTime={false}
