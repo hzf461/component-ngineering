@@ -1526,7 +1526,7 @@ export default class iwRangPickerPro extends PureComponent {
                 }
 
                 <Button type="link" style={{ border: 0, boxShadow: "none" }} onClick={() => {
-                  _this.setState({
+                  this.setState({
                     timeContentShow: false
                   })
                 }}>取消</Button>
