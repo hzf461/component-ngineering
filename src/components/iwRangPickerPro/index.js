@@ -555,7 +555,14 @@ export default class iwRangPickerPro extends PureComponent {
       };
       return false;
     }
-    if ((this.state.value[0] && this.state.value[1]) && !marr[0].isSame(this.state.value[0]) && !marr[1].isSame(this.state.value[1]) && timestr == (this.state.value[2] && this.state.value[2].rangeName ? this.state.value[2].rangeName : "")) {
+    if (
+      (this.state.value[0] && this.state.value[1]) && 
+      !( marr[0].format(format) === this.state.value[0].format(format) ) && 
+      !( marr[1].format(format) === this.state.value[1].format(format) ) && 
+      // !marr[0].isSame(this.state.value[0]) && 
+      // !marr[1].isSame(this.state.value[1]) && 
+      timestr == (this.state.value[2] && this.state.value[2].rangeName ? this.state.value[2].rangeName : "")
+    ) {
       return false;
     }
     // 快速选择点击的是同一个
@@ -891,7 +898,7 @@ export default class iwRangPickerPro extends PureComponent {
       _data["time0"] = JSON.parse(JSON.stringify(this.state["time0"]));
       _data["time1"] = JSON.parse(JSON.stringify(this.state["time1"]));
 
-      _data["time" + _timei][_arri] = value;
+      _data["time" + _timei][_arri] = value < 10 ? '0' + value : value;
       _data = JSON.parse(JSON.stringify(_data));
 
 
@@ -1533,7 +1540,7 @@ export default class iwRangPickerPro extends PureComponent {
               {dynamic ? <Icon type="swap" /> : <Icon type="calendar" />}
               {label && presetStr ? (<span>{extCustomValName ? extCustomValName : presetStr}{!(isCustom && extCustomValName) ? <Divider type="vertical" style={{ background: "#566c92" }} /> : ""}</span>) : ""}
               {(label && dynamic && (!presetStr) && !(isCustom && extCustomValName)) ? <span>{getTimeStr()}<Divider type="vertical" style={{ background: "#566c92" }} /></span> : ""}
-              {(isCustom && extCustomValName) ? "" : (timearr && timearr[0] && timearr[1] ? (timearr[0].split(" ")[0] + " 至 " + timearr[1].split(" ")[0]) : "开始日期 - 结束日期")}
+              {(isCustom && extCustomValName) ? "" : (timearr && timearr[0] && timearr[1] ? ((showTime ? timearr[0] : timearr[0].split(" ")[0]) + " 至 " + (showTime ? timearr[1] : timearr[1].split(" ")[0])) : "开始日期 - 结束日期")}
             </Button>
             {
               contrastObj.isContrast && (!this.props.notShowContrastSpan) && (contrastObjValue.length >= 2)
